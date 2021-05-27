@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.google.cloud.teleport.templates;
+package com.google.cloud.teleport.templates; 
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.beam.vendor.guava.v20_0.com.google.common.base.Preconditions.checkArgument;
