@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** An template that copies messages from one Pubsub subscription to another Pubsub topic. */
-public class VWAPPublisher {
+public class VwapPublisher {
 
   /**
    * Main entry point for executing the pipeline.
@@ -158,7 +158,7 @@ public class VWAPPublisher {
     private Boolean isNullFilterValue;
 
     public static Builder newBuilder() {
-      return new AutoValue_VWAPPublisher_ExtractAndFilterEventsFn.Builder();
+      return new AutoValue_VwapPublisher_ExtractAndFilterEventsFn.Builder();
     }
 
     @Nullable
