@@ -69,7 +69,7 @@ public class VwapPublisher {
         pipeline
             .apply(
                    "Read PubSub Events",
-                   PubsubIO.readMessagesWithAttributes().fromSubscription(options.getInputSubscription()))
+                   PubsubIO.readMessagesWithAttributes().fromTopic(options.getInputTopic()))
             .apply(
                    "Derive VWAP",
                    ParDo.of(
@@ -88,13 +88,13 @@ public class VwapPublisher {
      */
     public interface Options extends PipelineOptions, StreamingOptions {
         @Description(
-                     "The Cloud Pub/Sub subscription to consume from. "
+                     "The Cloud Pub/Sub topic to consume from. "
                      + "The name should be in the format of "
-                     + "projects/<project-id>/subscriptions/<subscription-name>.")
+                     + "projects/<project-id>/topics/<topic-name>.")
                      @Validation.Required
-            ValueProvider<String> getInputSubscription();
+            ValueProvider<String> getInputTopic();
 
-        void setInputSubscription(ValueProvider<String> inputSubscription);
+        void setInputTopic(ValueProvider<String> inputTopic);
       
         @Description(
                      "The time interval, in seconds, for the VWAP lookback window. "
