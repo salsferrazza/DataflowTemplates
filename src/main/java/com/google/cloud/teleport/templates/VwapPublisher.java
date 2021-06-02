@@ -28,13 +28,16 @@ import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.options.StreamingOptions;
 import org.apache.beam.sdk.options.Validation;
-import org.apache.beam.sdk.options.ValueProvider;
+import org.apache.beam.sdk.options.ValueProvider; 
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** An template that copies messages from one Pubsub subscription to another Pubsub topic. */
+/** 
+ A template that calculates the Volume Weighted Average Price of a time-series 
+ stream who's messages contain embedded price and volume properties.
+*/
 public class VwapPublisher {
 
     /**
@@ -63,8 +66,9 @@ public class VwapPublisher {
         Pipeline pipeline = Pipeline.create(options);
         /**
          * Steps:
-         *      1) Read PubSubMessage with attributes from input PubSub subscription.
-         *      2) Write each PubSubMessage to output PubSub topic.
+         *      1) Read PubSubMessage with attributes from input PubSub topic
+	 *      2) TODO: Pull values from the source PubSubMessage and pass into time-series VWAP library
+         *      3) Publish the VWAP output from the time-series library to the output topic
          */
         pipeline
             .apply(
