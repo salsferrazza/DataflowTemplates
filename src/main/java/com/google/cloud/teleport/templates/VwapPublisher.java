@@ -17,8 +17,14 @@
 package com.google.cloud.teleport.templates; 
 
 import com.google.auto.value.AutoValue;
+import com.google.dataflow.sample.timeseriesflow.TimeSeriesData.TSDataPoint;
+import com.google.dataflow.sample.timeseriesflow.adaptors.fsi.data.cme.DeadLetterSink;
+import com.google.dataflow.sample.timeseriesflow.adaptors.fsi.data.cme.CMEAdapter.SSCLTOBJsonTransform;
+import com.google.dataflow.sample.timeseriesflow.adaptors.fsi.data.cme.CMEAdapter.SSCLTRDJsonTransform;
+
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
+import org.apache.beam.sdk.coders.StringUtf8Coder;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubMessage;
 import org.apache.beam.sdk.metrics.Counter;
@@ -28,9 +34,11 @@ import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.options.StreamingOptions;
 import org.apache.beam.sdk.options.Validation;
-import org.apache.beam.sdk.options.ValueProvider; 
+import org.apache.beam.sdk.options.ValueProvider;
+import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.values.PCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,16 +78,34 @@ public class VwapPublisher {
 	 *      2) TODO: Pull values from the source PubSubMessage and pass into time-series VWAP library
          *      3) Publish the VWAP output from the time-series library to the output topic
          */
-        pipeline
-            .apply(
-                   "Read PubSub Events",
-                   PubsubIO.readMessagesWithAttributes().fromTopic(options.getInputTopic()))
-            .apply(
-                   "Derive VWAP",
-                   ParDo.of(
-                            DeriveVwapFn.newBuilder()
-                            .build()))
-            .apply("Write PubSub Events", PubsubIO.writeMessages().to(options.getOutputTopic()));
+        // pipeline
+        //     .apply(
+        //            "Read PubSub Events",
+        //            PubsubIO.readMessagesWithAttributes().fromTopic(options.getInputTopic()))
+        //     .apply(
+        //            "Derive VWAP",
+        //            ParDo.of(
+        //                     DeriveVwapFn.newBuilder()
+        //                     .build()))
+        //     .apply("Write PubSub Events", PubsubIO.writeMessages().to(options.getOutputTopic()));
+        // Convert Top of Book JSON records to TSDataPoint
+    // pipeline
+    //         .apply(
+    //                "Read PubSub Events",
+    //                PubsubIO.readMessagesWithAttributes().fromTopic(options.getInputTopic()));
+    
+    
+    pipeline
+    .apply(
+        "Read PubSub Events",
+        PubsubIO.readMessagesWithAttributes().fromTopic(options.getInputTopic()));
+        //.apply(Create.of(expected).withCoder(StringUtf8Coder.of()))
+    // .apply(
+    //         SSCLTRDJsonTransform.newBuilder()
+    //             .setDeadLetterSinkType(DeadLetterSink.LOG)
+    //             .setBigQueryDeadLetterSinkProject(null)
+    //             .setBigQueryDeadLetterSinkTable(null)
+    //             .build());
 
         // Execute the pipeline and return the result.
         return pipeline.run();
