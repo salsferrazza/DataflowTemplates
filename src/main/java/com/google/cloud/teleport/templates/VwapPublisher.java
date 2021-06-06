@@ -16,6 +16,8 @@
 
 package com.google.cloud.teleport.templates; 
 
+import java.util.HashMap;
+
 import com.google.auto.value.AutoValue;
 import com.google.dataflow.sample.timeseriesflow.TimeSeriesData.TSDataPoint;
 import com.google.dataflow.sample.timeseriesflow.adaptors.fsi.data.cme.DeadLetterSink;
@@ -143,6 +145,48 @@ public class VwapPublisher {
 
     }
 
+    /**
+     * DoFn that will convert TSDataPoints to PubsubMessages
+     */
+    @AutoValue
+    public abstract static class CreateOutputMessageFn extends DoFn<TSDataPoint, PubsubMessage> {
+
+        private static final Logger LOG = LoggerFactory.getLogger(CreateOutputMessageFn.class);
+
+        // Counter tracking the number of incoming Pub/Sub messages.
+        private static final Counter INPUT_COUNTER = Metrics
+            .counter(CreateOutputMessageFn.class, "inbound-messages");
+
+        // Counter tracking the number of output Pub/Sub messages after the user provided filter
+        // is applied.
+        private static final Counter OUTPUT_COUNTER = Metrics
+            .counter(CreateOutputMessageFn.class, "outbound-messages");
+
+        public static Builder newBuilder() {
+            return new AutoValue_VwapPublisher_CreateOutputMessageFn.Builder();
+        }
+
+        @Setup
+        public void setup() {   }
+
+        @ProcessElement
+        public void processElement(ProcessContext context) {
+            INPUT_COUNTER.inc();
+            TSDataPoint dataPoint = context.element();
+	    PubsubMessage msg = new PubsubMessage(dataPoint.toString().getBytes(), new HashMap<String, String>());
+	    context.output(msg);
+            OUTPUT_COUNTER.inc();
+	}
+
+        /** Builder class for {@link CreateOutputMessageFn}. */
+        @AutoValue.Builder
+            abstract static class Builder {
+            abstract CreateOutputMessageFn build();
+	}
+    }
+
+
+    
     /**
      * DoFn that will determine if events are to be filtered. If filtering is enabled, it will only
      * publish events that pass the filter else, it will publish all input events.
