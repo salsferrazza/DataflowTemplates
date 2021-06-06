@@ -81,13 +81,17 @@ public class VwapPublisher {
         .apply(
             "Read PubSub Events",
             PubsubIO.readStrings().fromTopic(options.getInputTopic()))
-        .apply(
+        .apply("Convert Pub/Sub messages to time-series data points",
                 SSCLTRDJsonTransform.newBuilder()
                     .setDeadLetterSinkType(DeadLetterSink.LOG)
                     .setBigQueryDeadLetterSinkProject(null)
                     .setBigQueryDeadLetterSinkTable(null)
-                    .build());
-
+                    .build())
+	.apply("Convert time-series data points to Pub/Sub messages",
+	       ParDo.of(new CreateOutputMessageFn()))
+	.apply("Write Pub/Sub events",
+	       PubsubIO.writeMessages().to(options.getOutputTopic()));
+    );
         // Execute the pipeline and return the result.
         return pipeline.run();
     }
