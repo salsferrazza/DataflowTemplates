@@ -36,12 +36,13 @@ import org.apache.beam.sdk.options.StreamingOptions;
 import org.apache.beam.sdk.options.Validation;
 import org.apache.beam.sdk.options.ValueProvider;
 import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.ParDo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** 
- A template that calculates the Volume Weighted Average Price of a time-series 
- stream who's messages contain embedded price and volume properties.
+    A template that calculates the Volume Weighted Average Price of a time-series 
+    stream who's messages contain embedded price and volume properties.
 */
 public class VwapPublisher {
 
@@ -72,28 +73,29 @@ public class VwapPublisher {
         /**
          * Steps:
          *      1) Read PubSubMessage strings from input PubSub topic
-	 *          2) Use CMEAdapter.SSCLTRDJsonTransform to convert these to TSDataPoints
+         *          2) Use CMEAdapter.SSCLTRDJsonTransform to convert these to TSDataPoints
          *      3) TODO: Perform Type 1 or 2 calcs on the resulting PCollection<TSDataPoints>, and publish
          *         somewhere. This'll probably happen in the DeriveVwapFn I imagine.
          */
     
-    pipeline
-        .apply(
-            "Read PubSub Events",
-            PubsubIO.readStrings().fromTopic(options.getInputTopic()))
-        .apply("Convert Pub/Sub messages to time-series data points",
-                SSCLTRDJsonTransform.newBuilder()
-                    .setDeadLetterSinkType(DeadLetterSink.LOG)
-                    .setBigQueryDeadLetterSinkProject(null)
-                    .setBigQueryDeadLetterSinkTable(null)
-                    .build())
-	.apply("Convert time-series data points to Pub/Sub messages",
-	       ParDo.of(new CreateOutputMessageFn()))
-	.apply("Write Pub/Sub events",
-	       PubsubIO.writeMessages().to(options.getOutputTopic()));
-    );
+        pipeline
+            .apply(
+                   "Read PubSub Events",
+                   PubsubIO.readStrings().fromTopic(options.getInputTopic()))
+            .apply("Convert Pub/Sub messages to time-series data points",
+                   SSCLTRDJsonTransform.newBuilder()
+                   .setDeadLetterSinkType(DeadLetterSink.LOG)
+                   .setBigQueryDeadLetterSinkProject(null)
+                   .setBigQueryDeadLetterSinkTable(null)
+                   .build())
+            .apply("Convert time-series data points to Pub/Sub messages",
+                   ParDo.of(CreateOutputMessageFn.newBuilder().build()))
+            .apply("Write Pub/Sub events",
+                   PubsubIO.writeMessages().to(options.getOutputTopic()));
+
         // Execute the pipeline and return the result.
         return pipeline.run();
+
     }
 
     /**
@@ -177,16 +179,16 @@ public class VwapPublisher {
         public void processElement(ProcessContext context) {
             INPUT_COUNTER.inc();
             TSDataPoint dataPoint = context.element();
-	    PubsubMessage msg = new PubsubMessage(dataPoint.toString().getBytes(), new HashMap<String, String>());
-	    context.output(msg);
+            PubsubMessage msg = new PubsubMessage(dataPoint.toString().getBytes(), new HashMap<String, String>());
+            context.output(msg);
             OUTPUT_COUNTER.inc();
-	}
+        }
 
         /** Builder class for {@link CreateOutputMessageFn}. */
         @AutoValue.Builder
             abstract static class Builder {
             abstract CreateOutputMessageFn build();
-	}
+        }
     }
 
 
@@ -239,6 +241,6 @@ public class VwapPublisher {
         @AutoValue.Builder
             abstract static class Builder {
             abstract DeriveVwapFn build();
-	}
+        }
     }
 }
