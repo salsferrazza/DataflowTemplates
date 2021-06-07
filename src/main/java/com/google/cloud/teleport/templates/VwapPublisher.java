@@ -89,7 +89,7 @@ public class VwapPublisher {
                    .setBigQueryDeadLetterSinkTable(null)
                    .build())
             .apply("Convert time-series data points to Pub/Sub messages",
-                   ParDo.of(CreateOutputMessageFn.newBuilder().build()))
+                   ParDo.of(CreateOutputMessageFn.newBuilder().setOptions(options).build()))
             .apply("Write Pub/Sub events",
                    PubsubIO.writeMessages().to(options.getOutputTopic()));
 
@@ -168,6 +168,9 @@ public class VwapPublisher {
         private static final Counter OUTPUT_COUNTER = Metrics
             .counter(CreateOutputMessageFn.class, "outbound-messages");
 
+        // Pipeline options
+        public abstract Options getOptions();
+   
         public static Builder newBuilder() {
             return new AutoValue_VwapPublisher_CreateOutputMessageFn.Builder();
         }
@@ -188,10 +191,9 @@ public class VwapPublisher {
         @AutoValue.Builder
             abstract static class Builder {
             abstract CreateOutputMessageFn build();
+            abstract Builder setOptions(Options options);
         }
     }
-
-
     
     /**
      * DoFn that will determine if events are to be filtered. If filtering is enabled, it will only
@@ -210,6 +212,9 @@ public class VwapPublisher {
         // is applied.
         private static final Counter OUTPUT_COUNTER = Metrics
             .counter(DeriveVwapFn.class, "outbound-messages");
+
+        // Pipeline options
+        public abstract Options getOptions();
 
         public static Builder newBuilder() {
             return new AutoValue_VwapPublisher_DeriveVwapFn.Builder();
@@ -241,6 +246,7 @@ public class VwapPublisher {
         @AutoValue.Builder
             abstract static class Builder {
             abstract DeriveVwapFn build();
+            abstract Builder setOptions(Options options);
         }
     }
 }
