@@ -185,6 +185,7 @@ public class VwapPublisher {
             PubsubMessage msg = new PubsubMessage(dataPoint.toString().getBytes(), new HashMap<String, String>());
             context.output(msg);
             OUTPUT_COUNTER.inc();
+            
         }
 
         /** Builder class for {@link CreateOutputMessageFn}. */
