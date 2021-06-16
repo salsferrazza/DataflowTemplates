@@ -107,27 +107,29 @@
   </properties>
 
   <dependencies>
-    <!-- Timseries libraries -->
-    <dependency>
-      <groupId>org.apache.beam.sdk.extensions.timeseries</groupId>
-      <artifactId>time-series-metrics-library</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.dataflow.sample.timeseriesflow.adapters</groupId>
-      <artifactId>adapters</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.dataflow.sample.timeseriesflow</groupId>
-      <artifactId>time-series-pipeline</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.dataflow.sample.timeseriesflow.examples.simpledata.transforms</groupId>
-      <artifactId>synthetic-examples</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
+
+      <!-- Timseries libraries -->
+      <dependency>
+        <groupId>com.google.dataflow.sample.timeseriesflow</groupId>
+        <artifactId>time-series-metrics-library</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.dataflow.sample.timeseriesflow</groupId>
+        <artifactId>adapters</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.dataflow.sample.timeseriesflow</groupId>
+        <artifactId>time-series-pipeline</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.dataflow.sample.timeseriesflow</groupId>
+        <artifactId>synthetic-examples</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+  
 
     <!-- Beam -->
     <dependency>
