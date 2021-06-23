@@ -165,13 +165,16 @@ public class VwapPublisher {
          */
 
         PCollection<TimeSeriesData.TSDataPoint> sources = pipeline
-            .apply("Read PubSub Events", PubsubIO.readStrings().fromTopic(options.getInputTopic()))
+            .apply("Read PubSub Events", PubsubIO.readStrings().fromTopic(options.getInputTopic())
+                .withTimestampAttribute("EarliestEventTime"))
 
             .apply("Convert Pub/Sub messages to time-series data points",
-                SSCLTRDJsonTransform.newBuilder().setDeadLetterSinkType(DeadLetterSink.LOG)
-                    .setBigQueryDeadLetterSinkProject(null).setBigQueryDeadLetterSinkTable(null).build());
-
-
+                SSCLTRDJsonTransform.newBuilder()
+                    .setDeadLetterSinkType(DeadLetterSink.LOG)
+                    .setBigQueryDeadLetterSinkProject(null)
+                    .setBigQueryDeadLetterSinkTable(null)
+                    .setSuppressCategorical(true)
+                    .build());
 
         GenerateComputations generateComputations =
                 GenerateComputations.fromPiplineOptions(options).build();
