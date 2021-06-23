@@ -18,33 +18,13 @@ package com.google.cloud.teleport.templates;
 
 import com.google.auto.value.AutoValue;
 import com.google.dataflow.sample.timeseriesflow.TimeSeriesData;
-import com.google.dataflow.sample.timeseriesflow.TimeSeriesData.TSAccum;
-import com.google.dataflow.sample.timeseriesflow.TimeSeriesData.TSAccumSequence;
-import com.google.dataflow.sample.timeseriesflow.TimeSeriesData.TSDataPoint;
-import com.google.dataflow.sample.timeseriesflow.TimeSeriesData.TSKey;
 import com.google.dataflow.sample.timeseriesflow.metrics.core.TSMetricsOptions;
 import com.google.dataflow.sample.timeseriesflow.options.TFXOptions;
 import com.google.dataflow.sample.timeseriesflow.options.TSOutputPipelineOptions;
 import com.google.dataflow.sample.timeseriesflow.adaptors.fsi.data.cme.CMEAdapter.SSCLTRDJsonTransform;
-import com.google.dataflow.sample.timeseriesflow.common.CommonUtils;
-import com.google.dataflow.sample.timeseriesflow.examples.simpledata.transforms.Print;
 import com.google.dataflow.sample.timeseriesflow.adaptors.fsi.data.cme.DeadLetterSink;
 import com.google.dataflow.sample.timeseriesflow.graph.GenerateComputations;
-import com.google.dataflow.sample.timeseriesflow.io.tfexample.OutPutTFExampleToPubSub;
-import com.google.dataflow.sample.timeseriesflow.io.tfexample.TSAccumIterableToTFExample;
-import com.google.dataflow.sample.timeseriesflow.metrics.core.typetwo.basic.bb.BBFn;
-import com.google.dataflow.sample.timeseriesflow.metrics.core.typetwo.basic.ma.MAFn;
 import com.google.dataflow.sample.timeseriesflow.metrics.core.typetwo.basic.ma.MAFn.MAAvgComputeMethod;
-import com.google.dataflow.sample.timeseriesflow.metrics.core.typetwo.basic.stddev.StdDevFn;
-import com.google.dataflow.sample.timeseriesflow.metrics.core.complex.fsi.rsi.RSIGFn;
-import com.google.dataflow.sample.timeseriesflow.metrics.core.complex.fsi.vwap.VWAPGFn;
-import com.google.dataflow.sample.timeseriesflow.metrics.core.typeone.Max;
-import com.google.dataflow.sample.timeseriesflow.metrics.core.typeone.Min;
-import com.google.dataflow.sample.timeseriesflow.metrics.core.typeone.Sum;
-import com.google.dataflow.sample.timeseriesflow.metrics.core.complex.rule.ValueInBoundsGFn;
-import com.google.dataflow.sample.timeseriesflow.transforms.ConvertAccumToSequence;
-import com.google.dataflow.sample.timeseriesflow.transforms.MajorKeyWindowSnapshot;
-import com.google.dataflow.sample.timeseriesflow.transforms.PerfectRectangles;
 import com.google.dataflow.sample.timeseriesflow.transforms.TSAccumToJson;
 
 import java.util.ArrayList;
@@ -58,22 +38,16 @@ import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubMessage;
 import org.apache.beam.sdk.metrics.Counter;
 import org.apache.beam.sdk.metrics.Metrics;
-import org.apache.beam.sdk.metrics.MetricsOptions;
 import org.apache.beam.sdk.options.Description;
-import org.apache.beam.sdk.options.PipelineOptions;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
-import org.apache.beam.sdk.options.StreamingOptions;
 import org.apache.beam.sdk.options.Validation;
 import org.apache.beam.sdk.options.ValueProvider;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.Values;
-import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.vendor.guava.v26_0_jre.com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tensorflow.example.Example;
 
 /**
  * A template that calculates the Volume Weighted Average Price of a time-series
