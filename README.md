@@ -45,6 +45,11 @@ their functionality.
 * [Word Count](src/main/java/com/google/cloud/teleport/templates/WordCount.java)
 
 
+## Industry-specific Pipelines
+
+* [Financial Services: CME Smartstream VWAP calculator](src/main/java/com/google/cloud/teleport/templates/VwapPublisher.java)
+
+
 \* Supports user-defined functions (UDFs).
 
 For documentation on each template's usage and parameters, please see
