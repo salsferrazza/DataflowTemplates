@@ -607,6 +607,7 @@
         <module>streaming-data-generator</module>
         <module>kafka-to-pubsub</module>
         <module>kafka-common</module>
+        <module>fsi-vwap-pubsub-json-to-pubsub</module>
     </modules>
 
 </project>
