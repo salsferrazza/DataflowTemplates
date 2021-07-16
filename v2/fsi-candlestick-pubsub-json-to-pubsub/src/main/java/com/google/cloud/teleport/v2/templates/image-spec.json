@@ -1,0 +1,80 @@
+{
+    "image": "gcr.io/cme-serverless-df-template/fsi-vwap-pubsub-json-to-pubsub",
+    "metadata": {
+      "name": "Financial Services: Pub/Sub JSON to Pub/Sub VWAP",
+      "description": "Stream VWAP for JSON records from Pub/Sub to Pub/Sub",
+      "parameters": [
+        {
+            "name": "inputTopic",
+            "label": "Pub/Sub input topic",
+            "helpText": "The Cloud Pub/Sub topic to consume from. The name should be in the format of projects/<project-id>/topics/<topic-name>.",
+            "isOptional": false,
+            "regexes": [
+                "^projects\\/[^\\n\\r\\/]+\\/topics\\/[^\\n\\r\\/]+$"],
+            "paramType": "PUBSUB_TOPIC"
+        },
+        {
+          "name": "interval",
+          "label": "Time interval for VWAP window",
+          "helpText": "The time interval, in seconds, for the VWAP lookback window. For a 5 minute VWAP window, specify 300",
+          "isOptional": false,
+          "regexes": [
+              "^[0-9]*$"],
+          "paramType": "TEXT"
+        },
+        {
+          "name": "priceFieldName",
+          "label": "Price field name",
+          "helpText": "The field name to use in the payload for the price",
+          "isOptional": false,
+          "regexes": [
+            ".+"
+          ],
+          "paramType": "TEXT"
+        },
+        {
+          "name": "volumeFieldName",
+          "label": "Volume field name",
+          "helpText": "The field name to use in the payload for the volume",
+          "isOptional": false,
+          "regexes": [
+            ".+"
+          ],
+          "paramType": "TEXT"
+        },
+        {
+          "name": "outputTopic",
+          "label": "Pub/Sub input topic",
+          "helpText": "The Cloud Pub/Sub topic to publish to. The name should be in the format of projects/<project-id>/topics/<topic-name>.",
+          "isOptional": false,
+          "regexes": [
+            "^projects\\/[^\\n\\r\\/]+\\/topics\\/[^\\n\\r\\/]+$"],
+          "paramType": "PUBSUB_TOPIC"
+        },
+        {
+          "name": "enablePrintMetricsToLogs",
+          "label": "Enable printing metrics to logs",
+          "helpText": "Enable printing metrics to logs. For example true or false",
+          "isOptional": false,
+          "regexes": [
+            "^(true|false)$"
+          ],
+          "paramType": "TEXT"
+        },
+        {
+          "name": "enablePrintTFExamplesToLogs",
+          "label": "BEnable printing output to logs",
+          "helpText": "Enable printing output to logs. For example true or false",
+          "isOptional": false,
+          "regexes": [
+            "^(true|false)$"
+          ],
+          "paramType": "TEXT"
+        }
+      ]
+    },
+    "sdkInfo": {
+      "language": "JAVA"
+    }
+  }
+  
