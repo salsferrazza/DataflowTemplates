@@ -1,0 +1,7 @@
+{
+  "mainClass": "com.google.cloud.teleport.v2.templates.CandlestickPublisher",
+  "classPath": "/template/fsi-candlestick-pubsub-json-to-pubsub*:/template/fsi-candlestick-pubsub-json-to-pubsub/libs/*:/template/fsi-candlestick-pubsub-json-to-pubsub/classes",
+  "defaultParameterValues": {
+    "labels": "{\"goog-dataflow-provided-template-type\":\"flex\", \"goog-dataflow-provided-template-name\":\"fsi-candlestick-pubsub-json-to-pubsub\"}"
+  }
+}

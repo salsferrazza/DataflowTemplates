@@ -1,5 +1,5 @@
 {
-  "mainClass": "com.google.cloud.teleport.v2.templates.VwapPublisher",
+  "mainClass": "com.google.cloud.teleport.v2.templates.CandlestickPublisher",
   "classPath": "/template/fsi-vwap-pubsub-json-to-pubsub*:/template/fsi-vwap-pubsub-json-to-pubsub/libs/*:/template/fsi-vwap-pubsub-json-to-pubsub/classes",
   "defaultParameterValues": {
     "labels": "{\"goog-dataflow-provided-template-type\":\"flex\", \"goog-dataflow-provided-template-name\":\"fsi-vwap-pubsub-json-to-pubsub\"}"

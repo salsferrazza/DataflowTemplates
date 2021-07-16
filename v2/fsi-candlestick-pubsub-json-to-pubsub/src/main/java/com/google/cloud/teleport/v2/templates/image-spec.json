@@ -52,22 +52,22 @@
           "paramType": "PUBSUB_TOPIC"
         },
         {
-          "name": "enablePrintMetricsToLogs",
-          "label": "Enable printing metrics to logs",
-          "helpText": "Enable printing metrics to logs. For example true or false",
+          "name": "symbol",
+          "label": "Symbol name",
+          "helpText": "The symbol of the instrument from which to derive the candlesticks",
           "isOptional": false,
           "regexes": [
-            "^(true|false)$"
+            ".+"
           ],
           "paramType": "TEXT"
         },
         {
-          "name": "enablePrintTFExamplesToLogs",
-          "label": "BEnable printing output to logs",
-          "helpText": "Enable printing output to logs. For example true or false",
+          "name": "outputMessageTemplate",
+          "label": "Output message template as text",
+          "helpText": "The symbol of the instrument from which to derive the candlesticks",
           "isOptional": false,
           "regexes": [
-            "^(true|false)$"
+            ".+"
           ],
           "paramType": "TEXT"
         }

@@ -29,7 +29,6 @@ import com.google.dataflow.sample.timeseriesflow.transforms.TSAccumToJson;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
@@ -48,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A template that extracts the OHLC bars from a pricing time series
+ * A template that extracts the OHLC bars from a pricing time series.
  */
 public class CandlestickPublisher {
 
