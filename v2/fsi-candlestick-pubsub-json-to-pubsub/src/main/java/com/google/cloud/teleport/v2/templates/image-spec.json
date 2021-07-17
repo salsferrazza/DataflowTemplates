@@ -1,8 +1,8 @@
 {
-    "image": "gcr.io/cme-serverless-df-template/fsi-vwap-pubsub-json-to-pubsub",
+    "image": "gcr.io/cme-serverless-df-template/fsi-candlestick-pubsub-json-to-pubsub",
     "metadata": {
-      "name": "Financial Services: Pub/Sub JSON to Pub/Sub VWAP",
-      "description": "Stream VWAP for JSON records from Pub/Sub to Pub/Sub",
+      "name": "Financial Services: Pub/Sub JSON to Pub/Sub OHLC",
+      "description": "Stream OHLC for JSON records from Pub/Sub to Pub/Sub",
       "parameters": [
         {
             "name": "inputTopic",
@@ -15,8 +15,8 @@
         },
         {
           "name": "interval",
-          "label": "Time interval for VWAP window",
-          "helpText": "The time interval, in seconds, for the VWAP lookback window. For a 5 minute VWAP window, specify 300",
+          "label": "Time interval for OHLC window",
+          "helpText": "The time interval, in seconds, for the OHLC lookback window. For a 5 minute OHLC window, specify 300",
           "isOptional": false,
           "regexes": [
               "^[0-9]*$"],
