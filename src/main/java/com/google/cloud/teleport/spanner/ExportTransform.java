@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2018 Google Inc.
+ * Copyright (C) 2018 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -121,6 +121,7 @@ public class ExportTransform extends PTransform<PBegin, WriteFilesResult<String>
   private final ValueProvider<String> outputDir;
   private final ValueProvider<String> testJobId;
   private final ValueProvider<String> snapshotTime;
+  private final ValueProvider<String> tableNames;
   private final ValueProvider<Boolean> shouldExportTimestampAsLogicalType;
 
   public ExportTransform(
@@ -132,7 +133,8 @@ public class ExportTransform extends PTransform<PBegin, WriteFilesResult<String>
         outputDir,
         testJobId,
         /*snapshotTime=*/ ValueProvider.StaticValueProvider.of(""),
-        /*shouldExportTimestampAsLogicalType=*/ ValueProvider.StaticValueProvider.of(false));
+        /*tableNames=*/ ValueProvider.StaticValueProvider.of(""),
+        /*shouldExportTimestampAsLogicalType=*/ValueProvider.StaticValueProvider.of(false));
   }
 
   public ExportTransform(
@@ -140,11 +142,13 @@ public class ExportTransform extends PTransform<PBegin, WriteFilesResult<String>
       ValueProvider<String> outputDir,
       ValueProvider<String> testJobId,
       ValueProvider<String> snapshotTime,
+      ValueProvider<String> tableNames,
       ValueProvider<Boolean> shouldExportTimestampAsLogicalType) {
     this.spannerConfig = spannerConfig;
     this.outputDir = outputDir;
     this.testJobId = testJobId;
     this.snapshotTime = snapshotTime;
+    this.tableNames = tableNames;
     this.shouldExportTimestampAsLogicalType = shouldExportTimestampAsLogicalType;
   }
 
@@ -175,11 +179,12 @@ public class ExportTransform extends PTransform<PBegin, WriteFilesResult<String>
     PCollection<Ddl> ddl =
         p.apply("Read Information Schema", new ReadInformationSchema(spannerConfig, tx));
     PCollection<ReadOperation> tables =
-        ddl.apply("Build table read operations", new BuildReadFromTableOperations());
+        ddl.apply("Build table read operations",
+            new BuildReadFromTableOperations(tableNames));
 
-    PCollection<KV<String, Void>> allTableNames =
+    PCollection<KV<String, Void>> allTableAndViewNames =
         ddl.apply(
-            "List all table names",
+            "List all table and view names",
             ParDo.of(
                 new DoFn<Ddl, KV<String, Void>>() {
 
@@ -188,6 +193,12 @@ public class ExportTransform extends PTransform<PBegin, WriteFilesResult<String>
                     Ddl ddl = c.element();
                     for (Table t : ddl.allTables()) {
                       c.output(KV.of(t.name(), null));
+                    }
+                    // We want the resulting collection to contain the names of all entities that
+                    // need to be exported, both tables and views.  Ddl holds these separately, so
+                    // we need to add the names of all views separately here.
+                    for (com.google.cloud.teleport.spanner.ddl.View v : ddl.views()) {
+                      c.output(KV.of(v.name(), null));
                     }
                   }
                 }));
@@ -232,10 +243,8 @@ public class ExportTransform extends PTransform<PBegin, WriteFilesResult<String>
                       @ProcessElement
                       public void processElement(ProcessContext c) {
                         Collection<Schema> avroSchemas =
-                            new DdlToAvroSchemaConverter(
-                                    "spannerexport",
-                                    "1.0.0",
-                                    shouldExportTimestampAsLogicalType.get())
+                            new DdlToAvroSchemaConverter("spannerexport", "1.0.0",
+                                shouldExportTimestampAsLogicalType.get())
                                 .convert(c.element());
                         for (Schema schema : avroSchemas) {
                           c.output(KV.of(schema.getName(), new SerializableSchemaSupplier(schema)));
@@ -269,14 +278,16 @@ public class ExportTransform extends PTransform<PBegin, WriteFilesResult<String>
     final TupleTag<Iterable<String>> nonEmptyTables = new TupleTag<>();
 
     PCollection<KV<String, CoGbkResult>> groupedTables =
-        KeyedPCollectionTuple.of(allTables, allTableNames)
+        KeyedPCollectionTuple.of(allTables, allTableAndViewNames)
             .and(nonEmptyTables, tableFiles)
             .apply("Group with all tables", CoGroupByKey.create());
 
-    // The following is to export empty tables from the database.
-    PCollection<KV<String, Iterable<String>>> emptyTables =
+    // The following is to export empty tables and views from the database.  Empty tables and views
+    // are handled together because we do not export any rows for views, only their metadata,
+    // including the queries defining them.
+    PCollection<KV<String, Iterable<String>>> emptyTablesAndViews =
         groupedTables.apply(
-            "Export empty tables",
+            "Export empty tables and views",
             ParDo.of(
                 new DoFn<KV<String, CoGbkResult>, KV<String, Iterable<String>>>() {
 
@@ -287,14 +298,16 @@ public class ExportTransform extends PTransform<PBegin, WriteFilesResult<String>
                     CoGbkResult coGbkResult = kv.getValue();
                     Iterable<String> only = coGbkResult.getOnly(nonEmptyTables, null);
                     if (only == null) {
-                      LOG.info("Exporting empty table " + table);
+                      LOG.info("Exporting empty table or view: " + table);
+                      // This file will contain the schema definition: column definitions for empty
+                      // tables or defining queries for views.
                       c.output(KV.of(table, Collections.singleton(table + ".avro-00000-of-00001")));
                     }
                   }
                 }));
 
-    emptyTables =
-        emptyTables.apply(
+    emptyTablesAndViews =
+        emptyTablesAndViews.apply(
             "Save empty schema files",
             ParDo.of(
                     new DoFn<KV<String, Iterable<String>>, KV<String, Iterable<String>>>() {
@@ -374,7 +387,7 @@ public class ExportTransform extends PTransform<PBegin, WriteFilesResult<String>
 
     PCollection<KV<String, Iterable<String>>> allFiles =
         PCollectionList.of(tableFiles)
-            .and(emptyTables)
+            .and(emptyTablesAndViews)
             .apply("Combine all files", Flatten.pCollections());
 
     PCollection<KV<String, String>> tableManifests =

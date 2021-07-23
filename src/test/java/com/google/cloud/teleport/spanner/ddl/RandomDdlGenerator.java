@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2018 Google Inc.
+ * Copyright (C) 2018 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.google.cloud.teleport.spanner.ddl;
 
 import com.google.auto.value.AutoValue;
@@ -87,7 +86,8 @@ public abstract class RandomDdlGenerator {
         .setArrayChance(20)
         .setMaxPkComponents(3)
         .setMaxBranchPerLevel(new int[] {2, 2, 1, 1, 1, 1, 1})
-        .setMaxViews(2)
+        // TODO(b/187873097): Enable views here once supported in production.
+        .setMaxViews(0)
         .setMaxIndex(2)
         .setMaxForeignKeys(2)
         // TODO: enable once CHECK constraints are enabled
@@ -137,7 +137,7 @@ public abstract class RandomDdlGenerator {
     for (int i = 0; i < numParentTables; i++) {
       generateTable(builder, null, 0);
     }
-    int numViews = 1 + getRandom().nextInt(getMaxViews());
+    int numViews = getRandom().nextInt(getMaxViews() + 1);
     for (int i = 0; i < numViews; i++) {
       generateView(builder);
     }
@@ -218,8 +218,15 @@ public abstract class RandomDdlGenerator {
     if (getEnableGeneratedColumns()) {
       // Add a generated column
       Column depColumn = table.columns().get(rnd.nextInt(table.columns().size()));
-      Column generatedColumn = Column.builder().name("generated").type(depColumn.type()).max()
-          .notNull(depColumn.notNull()).generatedAs(depColumn.name()).stored().autoBuild();
+      Column generatedColumn =
+          Column.builder()
+              .name("generated")
+              .type(depColumn.type())
+              .max()
+              .notNull(depColumn.notNull())
+              .generatedAs(depColumn.name())
+              .stored()
+              .autoBuild();
       tableBuilder.addColumn(generatedColumn);
       table = tableBuilder.build();
     }

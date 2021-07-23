@@ -104,6 +104,7 @@
     <cassandra.driver.version>3.6.0</cassandra.driver.version>
     <kms.version>1.40.0</kms.version>
     <proto-kms.version>0.87.0</proto-kms.version>
+    <spotless-maven-plugin.version>2.12.1</spotless-maven-plugin.version>
   </properties>
 
   <dependencies>
@@ -946,6 +947,45 @@
             <configuration>
               <sourceDirectory>${project.basedir}/src/main/resources/schema/avro</sourceDirectory>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Keep this equivalent with v2/pom.xml. Unfortunately, we need to duplicate the
+      plugin until we can fix errors introduced by adding v2 as a child module of the root
+      teleport module. -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless-maven-plugin.version}</version>
+        <configuration>
+          <formats>
+            <!-- Avoid trailing whitespace and require ending newline. -->
+            <format>
+              <includes>
+                <include>*.md</include>
+                <include>.gitignore</include>
+              </includes>
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
+            </format>
+          </formats>
+          <java>
+            <googleJavaFormat>
+              <version>1.8</version>
+              <style>GOOGLE</style>
+            </googleJavaFormat>
+            <licenseHeader>
+              <file>JAVA_LICENSE_HEADER</file>
+            </licenseHeader>
+          </java>
+        </configuration>
+        <!-- Bind to verify. -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
