@@ -74,11 +74,11 @@ public class CandlestickPublisher {
 
         // Type 1 time length and Type 2 time length
         int interval = options.getInterval().get();
-        options.setTypeOneComputationsLengthInSecs(5);
+        options.setTypeOneComputationsLengthInSecs(interval);
         options.setTypeTwoComputationsLengthInSecs(interval);
 
         // How many timesteps to output
-        options.setOutputTimestepLengthInSecs(5);
+        options.setOutputTimestepLengthInSecs(interval);
 
         // Parameters for gap filling.
         // We want to ensure that there is always a value within each timestep. This is redundant for
@@ -90,16 +90,8 @@ public class CandlestickPublisher {
 
         // Setup the metrics that are to be computed
         options.setTypeOneBasicMetrics(ImmutableList.of(
-            "typeone.Sum", 
             "typeone.Min", 
             "typeone.Max"));
-        options.setTypeTwoBasicMetrics(ImmutableList.of(
-            "typetwo.basic.ma.MAFn", 
-            "typetwo.basic.stddev.StdDevFn"));
-        options.setTypeTwoComplexMetrics(ImmutableList.of(
-            "complex.fsi.vwap.VWAPGFn"));
-        options.setMAAvgComputeMethod(MAAvgComputeMethod.SIMPLE_MOVING_AVERAGE);
-
         run(options);
     }
 
@@ -122,7 +114,7 @@ public class CandlestickPublisher {
         PCollection<TimeSeriesData.TSDataPoint> sources = pipeline
             .apply("Read PubSub Events", PubsubIO.readStrings().fromTopic(options.getInputTopic())
                 .withTimestampAttribute("EarliestEventTime"))
-
+            //Add filter for symbol
             .apply("Convert Pub/Sub messages to time-series data points",
                 SSCLTRDJsonTransform.newBuilder()
                     .setDeadLetterSinkType(DeadLetterSink.LOG)
@@ -137,6 +129,8 @@ public class CandlestickPublisher {
         sources
             .apply("Generate computations", generateComputations)
             .apply("Convert output to Json", TSAccumToJson.create())
+            //Extract OHLC
+            //Map to output template
             .apply("Convert Json to Pub/Sub message", ParDo.of(CreateOutputMessageFn.newBuilder().build()))
             .apply("Write Pub/Sub events", PubsubIO.writeMessages().to(options.getOutputTopic()));
          

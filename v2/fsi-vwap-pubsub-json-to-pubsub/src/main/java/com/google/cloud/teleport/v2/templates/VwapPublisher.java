@@ -202,16 +202,6 @@ public class VwapPublisher {
         ValueProvider<String> getOutputTopic();
 
         void setOutputTopic(ValueProvider<String> outputTopic); 
-
-        @Description("Enable printing metrics to logs")
-        Boolean getEnablePrintMetricsToLogs();
-
-        void setEnablePrintMetricsToLogs(Boolean enablePrintMetricsToLogs);
-
-        @Description("Enable printing output to logs")
-        Boolean getEnablePrintTFExamplesToLogs();
-
-        void setEnablePrintTFExamplesToLogs(Boolean enablePrintTFExamplesToLogs);
     }
 
     /**
